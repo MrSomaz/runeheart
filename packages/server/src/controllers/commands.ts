@@ -848,6 +848,13 @@ export default class Commands {
                 break;
             }
 
+            case 'unlockall': {
+                this.player.quests.forEachQuest((q) => q.setStage(9999));
+                this.player.achievements.forEachAchievement((a) => a.finish());
+
+                return this.player.notify('All quests and achievements are finished.');
+            }
+
             case 'finishachievements': {
                 return this.player.achievements.forEachAchievement((achievement) =>
                     achievement.finish()
