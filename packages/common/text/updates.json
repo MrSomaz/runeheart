@@ -1,11 +1,10 @@
 {
     "0.5.5-beta": {
-        "title": "Kaetram 0.5.5-beta",
+        "title": "Runeheart (test)",
         "content": [
-            "- Add language selection menu",
-            "- Add FPS throttle option",
-            "- New quests",
-            "- Anti-cheating detection improvements"
+            "- Welcome to Runeheart!",
+            "- Explore the whole world freely",
+            "- Built on Kaetram 0.5.5-beta"
         ]
     }
 }
