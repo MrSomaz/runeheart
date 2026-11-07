@@ -1,4 +1,5 @@
 import Menu from './menu';
+import Guide from './guide';
 
 import Updates from '@kaetram/common/text/updates.json';
 import { Modules } from '@kaetram/common/network';
@@ -9,6 +10,8 @@ export default class Welcome extends Menu {
     public override identifier: number = Modules.Interfaces.Welcome;
 
     private changelog: HTMLUListElement = document.querySelector('#welcome-changelog > ul')!;
+
+    public guide = new Guide();
 
     public constructor(private game: Game) {
         super('#welcome', '#close-welcome');
@@ -23,6 +26,19 @@ export default class Welcome extends Menu {
         super.show();
 
         this.loadChangelog();
+        this.guide.showHelpButton();
+    }
+
+    /**
+     * Runeheart: after the welcome window closes, new players get the quick guide.
+     */
+
+    public override hide(): void {
+        let wasVisible = this.isVisible();
+
+        super.hide();
+
+        if (wasVisible) this.guide.showFirstTime();
     }
 
     /**

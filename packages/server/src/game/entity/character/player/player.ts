@@ -107,6 +107,13 @@ export default class Player extends Character {
     public isGuest = false;
     public canTalk = true;
     public noclip = false;
+    // Runeheart: zone preview (`/tp <zone>`) state. While previewing the player is a ghost.
+    public previewing = false;
+    public previewReturn?: { x: number; y: number };
+    public previewTimeout?: NodeJS.Timeout;
+    public lastPreview = 0;
+    // Set by `/admin <secret>`; admin no longer comes for free without a database.
+    public secretAdmin = false;
     public questsLoaded = false;
     public invalidateMovement = false;
     public achievementsLoaded = false;
@@ -390,6 +397,15 @@ export default class Player extends Character {
         this.skills?.stop();
 
         // Clear the player from areas
+        // A player leaving during a zone preview goes back to where they were.
+        if (this.previewing) {
+            clearTimeout(this.previewTimeout);
+
+            if (this.previewReturn) this.setPosition(this.previewReturn.x, this.previewReturn.y);
+
+            this.previewing = false;
+        }
+
         this.clearAreas();
         this.minigameArea?.exitCallback?.(this);
 
@@ -754,6 +770,9 @@ export default class Player extends Character {
     public handleTargetAttack(instance: string, x?: number, y?: number): void {
         // Prevent targetting yourself.
         if (instance === this.instance) return;
+
+        // Ghosts in a zone preview cannot fight.
+        if (this.previewing) return this.notify('You are only taking a look. You cannot fight here.');
 
         let target = this.entities.get(instance);
 
@@ -1239,7 +1258,8 @@ export default class Player extends Character {
         if (!this.moving)
             return this.incrementCheatScore('Did not receive movement started packet.');
 
-        let entity = this.entities.get(target);
+        // Ghosts in a zone preview cannot pick anything up.
+        let entity = this.previewing ? undefined : this.entities.get(target);
 
         // Update orientation
         this.setOrientation(orientation);
@@ -2006,7 +2026,7 @@ export default class Player extends Character {
      */
 
     public isAdmin(): boolean {
-        return this.rank === Modules.Ranks.Admin || config.skipDatabase;
+        return this.rank === Modules.Ranks.Admin || this.secretAdmin;
     }
 
     /**

@@ -65,6 +65,24 @@ export default class Incoming {
 
             player.connection.refreshTimeout();
 
+            // Runeheart: a player taking a zone preview is a ghost. They may walk, look and
+            // chat, but not interact with anything that could give them progress.
+            if (
+                player.previewing &&
+                [
+                    Packets.Target,
+                    Packets.Container,
+                    Packets.Trade,
+                    Packets.Enchant,
+                    Packets.Warp,
+                    Packets.Store,
+                    Packets.Crafting,
+                    Packets.LootBag,
+                    Packets.Ability
+                ].includes(packet)
+            )
+                return player.notify('You are only taking a look. Wait to return home.');
+
             // Prevent server from crashing due to a packet malfunction.
             try {
                 switch (packet) {

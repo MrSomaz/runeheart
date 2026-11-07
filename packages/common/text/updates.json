@@ -2,9 +2,10 @@
     "0.5.5-beta": {
         "title": "Runeheart (test)",
         "content": [
-            "- Welcome to Runeheart!",
-            "- Explore the whole world freely",
-            "- Built on Kaetram 0.5.5-beta"
+            "- New: /tp <zone> for a 30 second look",
+            "- New: /redeem <code> for free gifts",
+            "- New: quick guide (? button)",
+            "- Type /help for all commands"
         ]
     }
 }

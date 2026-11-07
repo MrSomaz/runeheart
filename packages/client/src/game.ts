@@ -204,7 +204,14 @@ export default class Game {
             userAgent: agent
         });
 
-        if (this.storage.isNew()) this.menu.getWelcome().show();
+        // Runeheart: new players see the welcome window and then the quick guide; players
+        // who skipped the welcome still get the guide once. The "?" button is always there.
+        let welcome = this.menu.getWelcome();
+
+        welcome.guide.showHelpButton();
+
+        if (this.storage.isNew()) welcome.show();
+        else welcome.guide.showFirstTime();
 
         if (this.storage.data.new) {
             this.storage.data.new = false;

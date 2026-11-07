@@ -3,6 +3,8 @@ import Item from '../game/entity/objects/item';
 import Character from '../game/entity/character/character';
 import Items from '../../data/items.json';
 
+import { Zones, createCode, endPreview, listCodes, redeem, startPreview } from './runeheart';
+
 import log from '@kaetram/common/util/log';
 import Utils from '@kaetram/common/util/utils';
 import Filter from '@kaetram/common/util/filter';
@@ -103,6 +105,58 @@ export default class Commands {
             case 'ping': {
                 this.player.ping();
                 break;
+            }
+
+            case 'tp':
+            case 'look': {
+                let key = blocks.shift()?.toLowerCase();
+
+                if (!key) return this.player.notify(`Take a look at: ${Object.keys(Zones).join(', ')}`);
+
+                // Admins teleport for real, everyone else gets a 30 second ghost preview.
+                if (this.player.isAdmin()) {
+                    let zone = Zones[key];
+
+                    if (!zone) return this.player.notify(`Unknown zone: ${key}`);
+
+                    endPreview(this.player, true);
+                    return this.player.teleport(zone.x, zone.y, true, false, true);
+                }
+
+                return startPreview(this.player, key);
+            }
+
+            case 'zones': {
+                return this.player.notify(
+                    `Zones you can take a look at with /tp: ${Object.keys(Zones).join(', ')}`
+                );
+            }
+
+            case 'redeem': {
+                let code = blocks.shift();
+
+                if (!code) return this.player.notify('Usage: /redeem CODE');
+
+                return redeem(this.player, code);
+            }
+
+            case 'admin': {
+                let secret = process.env.RUNEHEART_ADMIN_SECRET || '';
+
+                if (!secret || blocks.join(' ') !== secret)
+                    return this.player.notify('Unknown command.');
+
+                this.player.secretAdmin = true;
+
+                return this.player.notify('Admin mode on.');
+            }
+
+            case 'help':
+            case 'commands': {
+                this.player.notify('/tp <zone> - take a 30 second look at a zone (/zones for the list)');
+                this.player.notify('/redeem <code> - redeem a free gift code');
+                this.player.notify('/players - see who is online, /coords - your position');
+                return;
             }
 
             case 'guild': {
@@ -848,6 +902,14 @@ export default class Commands {
                 break;
             }
 
+            case 'newcode': {
+                return createCode(this.player, blocks);
+            }
+
+            case 'codes': {
+                return listCodes(this.player);
+            }
+
             case 'unlockall': {
                 this.player.quests.forEachQuest((q) => q.setStage(9999));
                 this.player.achievements.forEachAchievement((a) => a.finish());
@@ -1224,82 +1286,6 @@ export default class Commands {
                         new DespawnPacket({ instance: this.player.instance }),
                         true
                     );
-                }
-
-                break;
-            }
-
-            case 'tp': {
-                let key = blocks.shift()!;
-
-                switch (key) {
-                    case 'home': {
-                        return this.player.teleport(191, 166, true, false, true);
-                    }
-
-                    case 'underwater': {
-                        return this.player.teleport(119, 290, true, false, true);
-                    }
-
-                    case 'underwatervolcano': {
-                        return this.player.teleport(194, 427, true, false, true);
-                    }
-
-                    case 'kok': {
-                        return this.player.teleport(290, 357, true, false, true);
-                    }
-
-                    case 'mountain': {
-                        return this.player.teleport(440, 312, true, false, true);
-                    }
-
-                    case 'santa': {
-                        return this.player.teleport(526, 256, true, false, true);
-                    }
-
-                    case 'ice': {
-                        return this.player.teleport(608, 332, true, false, true);
-                    }
-
-                    case 'pink': {
-                        return this.player.teleport(685, 433, true, false, true);
-                    }
-
-                    case 'hell': {
-                        return this.player.teleport(1112, 787, true, false, true);
-                    }
-
-                    case 'sewer': {
-                        return this.player.teleport(1117, 709, true, false, true);
-                    }
-
-                    case 'shroom': {
-                        return this.player.teleport(992, 631, true, false, true);
-                    }
-
-                    case 'skeletonking': {
-                        return this.player.teleport(120, 794, true, false, true);
-                    }
-
-                    case 'ogrelord': {
-                        return this.player.teleport(342, 166, true, false, true);
-                    }
-
-                    case 'queenant': {
-                        return this.player.teleport(591, 820, true, false, true);
-                    }
-
-                    case 'forestdragon': {
-                        return this.player.teleport(457, 807, true, false, true);
-                    }
-
-                    case 'crystalcave': {
-                        return this.player.teleport(886, 622, true, false, true);
-                    }
-
-                    case 'piratecaptain': {
-                        return this.player.teleport(930, 752, true, false, true);
-                    }
                 }
 
                 break;
