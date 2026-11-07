@@ -18,6 +18,35 @@ export default class Socket {
     private connection!: WebSocket;
     private listening = false;
 
+    /**
+     * Reads a game server picked at runtime, so the hosted client can point at a
+     * tunnel whose address changes. `?server=host` (wss) or `?server=ws://host:port`
+     * is saved in localStorage; `?server=reset` clears it.
+     */
+
+    private static getRemoteServer(): string | undefined {
+        let key = 'kaetram-remote-server',
+            param = new URLSearchParams(window.location.search).get('server')?.trim();
+
+        try {
+            if (param === 'reset') localStorage.removeItem(key);
+            else if (param) {
+                let url = /^wss?:\/\//.test(param) ? param : `wss://${param}`;
+
+                localStorage.setItem(key, url);
+                return url;
+            }
+
+            return localStorage.getItem(key) || undefined;
+        } catch {
+            return param && param !== 'reset'
+                ? /^wss?:\/\//.test(param)
+                    ? param
+                    : `wss://${param}`
+                : undefined;
+        }
+    }
+
     public constructor(private game: Game) {
         this.config = game.app.config;
         this.messages = new Messages(game.app);
@@ -53,7 +82,11 @@ export default class Socket {
         host ||= this.config.host;
         port ||= this.config.port;
 
-        let url = this.config.ssl ? `wss://${host}` : `ws://${host}:${port}`;
+        let url = this.config.ssl ? `wss://${host}` : `ws://${host}:${port}`,
+            remote = Socket.getRemoteServer();
+
+        // A server given at runtime (`?server=` or the saved one) wins over the build config.
+        if (remote) url = remote;
 
         // Create a websocket connection with the url generated.
         this.connection = new WebSocket(url);
