@@ -456,3 +456,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # https://www.toptal.com/developers/gitignore?templates=git,node,astro,cypressio,linux,macos,windows,visualstudiocode,webstorm,vim,emacs
+
+# Runeheart codes and redemptions (kept private)
+runeheart-data/
